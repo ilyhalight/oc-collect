@@ -3,36 +3,36 @@ use sqlx::SqlitePool;
 
 #[allow(dead_code)]
 #[derive(Deserialize, Debug)]
-struct Model {
-    id: String,
+pub struct Model {
+    pub id: String,
     #[serde(rename = "providerID")]
-    provider_id: String,
-    variant: Option<String>,
+    pub provider_id: String,
+    pub variant: Option<String>,
 }
 
 #[allow(dead_code)]
 #[derive(Debug, sqlx::FromRow)]
 pub struct RowUsageSession {
-    id: String,
-    project_id: String,
-    slug: String,
-    title: String,
-    cost: f64,
-    tokens_input: i64,
-    tokens_output: i64,
-    tokens_reasoning: i64,
-    tokens_cache_read: i64,
-    tokens_cache_write: i64,
-    model: String,
-    time_created: i64,
-    time_updated: i64,
+    pub id: String,
+    pub project_id: String,
+    pub slug: String,
+    pub title: String,
+    pub cost: f64,
+    pub tokens_input: i64,
+    pub tokens_output: i64,
+    pub tokens_reasoning: i64,
+    pub tokens_cache_read: i64,
+    pub tokens_cache_write: i64,
+    pub model: String,
+    pub time_created: i64,
+    pub time_updated: i64,
 }
 
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct UsageSessionData {
-    session: RowUsageSession,
-    model: Model,
+    pub session: RowUsageSession,
+    pub model: Model,
 }
 
 pub struct CollectClient {
