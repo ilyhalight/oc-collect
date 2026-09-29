@@ -2,6 +2,8 @@
 
 Small lib to collect data from OpenCode database.
 
+Supported OpenCode v2 and v1 databases.
+
 ## Usage
 
 Install:

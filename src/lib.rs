@@ -39,6 +39,11 @@ pub struct CollectClient {
     pool: Option<SqlitePool>,
 }
 
+#[derive(Deserialize, sqlx::FromRow)]
+pub struct TableExists {
+    pub exists: i8,
+}
+
 impl CollectClient {
     pub fn new() -> Self {
         CollectClient { pool: None }
@@ -76,8 +81,41 @@ impl CollectClient {
             }
         };
 
-        let sessions = sqlx::query_as::<_, RowUsageSession>(
+        let exists = sqlx::query_as::<_, TableExists>(
             r#"
+        SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'session_v2') AS "exists"
+        "#,
+        )
+        .fetch_all(pool)
+        .await?;
+
+        let use_v2_table = exists.get(0).map_or(false, |row| row.exists == 1);
+
+        let sessions = if use_v2_table {
+            sqlx::query_as::<_, RowUsageSession>(
+                r#"
+        SELECT
+            id,
+            project_id,
+            slug,
+            title,
+            cost,
+            tokens_input,
+            tokens_output,
+            tokens_reasoning,
+            tokens_cache_read,
+            tokens_cache_write,
+            model,
+            time_created,
+            time_updated
+        FROM session_v2
+        WHERE time_updated > ?1
+        ORDER BY time_created DESC
+        "#,
+            )
+        } else {
+            sqlx::query_as::<_, RowUsageSession>(
+                r#"
         SELECT
             id,
             project_id,
@@ -96,7 +134,8 @@ impl CollectClient {
         WHERE time_updated > ?1
         ORDER BY time_created DESC
         "#,
-        )
+            )
+        }
         .bind(time_updated)
         .fetch_all(pool)
         .await?;
